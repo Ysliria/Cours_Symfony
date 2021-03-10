@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+          integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <link rel="stylesheet" href="../../styles/prism.css">
+    <title>Symfony 5 - Introduction - Installation</title>
+</head>
+
+<body>
+
+<main class="container">
+    <h1 class="display-1">Installation</h1>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Prérequis</h2>
+
+        <p class="mt-3">
+            Symfony présente sur son <a href="https://symfony.com/doc/current/setup.html">site</a> l'ensemble des prérequis à son utilisation :
+
+            <ul>
+                <li>
+                    <a href="https://www.php.net/"><strong>PHP</strong></a> : dans une version supérieur ou égale à la <strong>7.2.5</strong>.
+                </li>
+                <li>
+                    <a href="https://getcomposer.org/"><strong>Composer</strong></a> : le gestionnaire de dépendance de PHP.
+                </li>
+                <li>
+                    <a href="https://symfony.com/download"><strong>Symfony CLI</strong></a> : la console de Symfony permet d'accélérer grandement la productivité ; elle va nous servir très rapidement dans le cours.
+                </li>
+                <li>
+                    <a href="https://www.jetbrains.com/fr-fr/phpstorm/"><strong>PHPStorm</strong></a> : ou un autre IDE avec lequel vous vous sentez à l'aise, car c'est avant tout <strong>VOTRE</strong> outil de travail ; il doit vous faciliter la vie !
+                </li>
+                <li>
+                    <a href="https://git-scm.com/"><strong>GIT</strong></a> : un gestionnaire de version indispensable à <strong>TOUS</strong> les projets de développement.
+                </li>
+            </ul>
+        </p>
+
+        <div class="alert alert-danger" role="alert">
+            <h3 class="alert-heading">Attention !</h3>
+
+            <p>PHPStorm est payant. Vous bénéficiez d'un mois d'essai, voir plus en tant qu'étudiant. Néanmoins, passé ce délais il vous faudra vous acquittez du prix de la licence !</p>
+
+            <hr>
+
+            <p>Mais l'essayer c'est l'adopter.</p>
+        </div>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Contrôle des prérequis</h2>
+
+        <p class="mt-3">
+            Comme je l'ai noté plus haut, on va très vite utiliser la console Symfony. Aller dans votre <mark>terminal</mark> et saisissez :
+            <kbd>symfony check:requirements</kbd><br>
+
+            Cette commande va vous permettre de controller les prérequis de Symfony. Voici un exemple de retour :
+
+            <pre class="bg-dark text-white"><code>
+    λ symfony check:requirements
+
+    Symfony Requirements Checker
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    > PHP is using the following php.ini file:
+    E:\laragon\bin\php\php-7.4.1-Win32-vc15-x64\php.ini
+
+    > Checking Symfony requirements:
+
+    ..................WW.....WW..
+
+
+    [OK]
+    Your system is ready to run Symfony projects
+
+
+    Optional recommendations to improve your setup
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    * a PHP accelerator should be installed
+    > Install and/or enable a PHP accelerator (highly recommended).
+
+    * realpath_cache_size should be at least 5M in php.ini
+    > Setting "realpath_cache_size" to e.g. "5242880" or "5M" in
+    > php.ini* may improve performance on Windows significantly in some
+    > cases.
+
+    * "memory_limit" should be greater than "post_max_size".
+    > Set "memory_limit" to be greater than "post_max_size".
+
+    * "post_max_size" should be greater than "upload_max_filesize".
+    > Set "post_max_size" to be greater than "upload_max_filesize".
+
+
+    Note  The command console can use a different php.ini file
+    ~~~~  than the one used by your web server.
+    Please check that both the console and the web server
+    are using the same PHP version and configuration.
+            </code></pre>
+        </p>
+
+        <aside class="mt-5">
+            <h3 class="text-muted">Erreurs possibles et contrôles supplémentaires</h3>
+
+            <dl class="row">
+                <dt class="col-5">Erreur à l'exécution de la commande Symfony</dt>
+                <dd class="col-7">Essayez de l'executer avec les droits <strong>sudo</strong>.</dd>
+
+                <dt class="col-5">Symfony signale une nouvelle version</dt>
+                <dd class="col-7">Vous pouvez valider la demande de mise à jour de la console Symfony. Ensuite vous pouvez valider la version en saisissant <kbd>symfony</kbd> dans le terminal</dd>
+
+                <dt class="col-5">Erreur sur les prérequis PHP</dt>
+                <dd class="col-7">Vérifier la version de PHP executée avec la comande : <kbd>php -v</kbd></dd>
+
+                <dt class="col-5">Contrôler GIT</dt>
+                <dd class="col-7">Pour contrôler la bonne installation de GIT exécutez la commande <kbd>git --version</kbd></dd>
+
+                <dt class="col-5">Contrôler Composer</dt>
+                <dd class="col-7">Pour contrôler composer exécutez la commande <kbd>composer -v</kbd></dd>
+            </dl>
+
+        </aside>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Prêt !</h2>
+
+        <p class="mt-3">
+            On y est ! Notre environnement est prêt. Nous pouvons nous lancer dans la découverte du framework. <br>
+            Commençons par créer un projet pour faire des tests et partir à la découverte de Symfony.
+            <div class="alert alert-danger">Attention ça va aller vite !</div>
+
+            Allez dans votre repertoire <mark>htdocs</mark> et taper : <kbd>symfony new test-symfony --full</kbd>
+        </p>
+    </section>
+</main>
+
+<script src="../../scripts/prism.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
+        crossorigin="anonymous"></script>
+</body>
+</html>
