@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+          integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <link rel="stylesheet" href="../../styles/prism.css">
+    <title>Symfony 5 - Introduction - Organisation</title>
+</head>
+
+<body>
+<main class="container">
+    <h1 class="display-1">Organisation de Symfony</h1>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Que s'est-il passé ?</h2>
+
+        <p class="mt-3">
+            Avant de voir l'organisation de Symfony revenons sur ce qui vient de se passer :
+
+            <pre class="bg-dark text-white"><code>
+    λ symfony new test-symfony --full
+    * Creating a new Symfony project with Composer
+      (running C:\ProgramData\ComposerSetup\bin\composer.phar create-project symfony/website-skeleton E:\laragon\www\test-symfony  --no-interaction)
+
+    * Setting up the project under Git version control
+      (running git init E:\laragon\www\test-symfony)
+
+     [OK] Your project is now ready in E:\laragon\www\test-symfony
+            </code></pre>
+        </p>
+
+        <p>
+            La première chose que l'on peut constater, c'est que la ligne de commande de la console Symfony en execute d'autre. La premère est <kbd>Creating a new Symfony project with Composer</kbd>.
+            <br>
+            On appelle la commande Composer pour créer un nouveau projet <em>symfony/website-skeleton</em> dans le dossier <em>E:\laragon\www\test-symfony</em>.
+        </p>
+
+        <p>
+            La seconde chose que fait pour nous la commande Symfony, c'est d'initialiser Git sur le projet ; un gestionnaire de version indispensable à <strong>TOUS</strong> les projets de développement.
+        </p>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Comment est-ce organisé ?</h2>
+
+        <p class="mt-3">
+            Attardons-nous sur l'arborescence !
+
+        <div class="text-center">
+            <figure class="figure">
+                <img src="../../images/symfony_arborescence.PNG" class="img-fluid rounded" alt="arborescence symfony">
+                <figcaption class="figure-caption text-right">Arboresence des fichiers de Symfony</figcaption>
+            </figure>
+        </div>
+
+        En partant du haut voici ce que l'on trouve :
+        <ul>
+            <li><strong>bin</strong> : les binaires utile Symfony dans lesquels on trouve notamment PHP Unit pour les tests et la console de Symfony. On n'y touchera pas !</li>
+            <li><strong>config</strong> : l'ensemble des fichiers de configuration. On y touchera pas non plus, sauf besoins particuliers.</li>
+            <li><strong>migrations</strong> : c'est ici que seront stockés les fichier servant à gérer la migration de la BDD. On en reparlera sur la partie ORM.</li>
+            <li><strong>public</strong> : c'est le point d'entrée de Symfony, on y trouve l'index et on y ajoutera les fichiers CSS, JS, etc ...</li>
+            <li>
+                <strong>src</strong> : c'est là que l'on passera le plus de temps. on y trouve :
+                <ul>
+                    <li><strong>Controller</strong> : ici nous créerons les fichiers qui intercepteront les requêtes de l'utilisateur et renverront les réponses à celui-ci.</li>
+                    <li><strong>Entity</strong> : c'est la structure de nos données, l'objet représentant un ensemble de données.</li>
+                    <li><strong>Repository</strong> : les repositories font le lien avec la base de données, c'est eux qui détiennent les requêtes qu'on lui enverra.</li>
+                    <li><strong>etc ...</strong></li>
+                </ul>
+            </li>
+            <li><strong>templates</strong> : les fichiers Twig (HTML) qui nous permettent de créer les vues.</li>
+            <li><strong>tests</strong> : l'ensemble des tests que nous souhaiterons coder</li>
+            <li><strong>translations</strong> : tous les fichiers de langue pour l'internationalisation de notre application</li>
+            <li><strong>var</strong> : le cache et les logs</li>
+            <li><strong>vendor</strong> : les dépendances du projet. On n'y touchera pas !</li>
+            <li><strong>.env</strong> : le fichier de parmétrage des environnements, on y reviendra plus tard</li>
+            <li><strong>composer.json</strong> : la liste de nos dépendances ; si vous y jetez un coup d'oeil, vous y trouverez tout ce que la commande de Symfony a installé</li>
+        </ul>
+        </p>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Comment ça marche ?</h2>
+
+        <p class="mt-3">
+            <ol>
+                <li>Une requête est envoyé par un utilisateur.</li>
+                <li>Elle est transmise au kernel qui va interroger le router pour savoir à quel contrôleur il doit adresser la demande</li>
+                <li>Une fois connu, le contrôleur reçoit la requête pour traitement</li>
+                <li>Si besoin il appellera la BDD via Doctrine en fonction du Model</li>
+                <li>
+                    Une fois sont traitement terminé il construit sa réponse :
+                    <ul>
+                        <li>Soit en générant une vue HTML</li>
+                        <li>Soit sans vue (comme par exemple pour une reponse JSON)</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <div class="text-center">
+                <figure class="figure">
+                    <img src="../../images/symfony_workflow.png" class="img-fluid rounded" alt="arborescence symfony">
+                    <figcaption class="figure-caption text-right">Synthèse du fonctionnement de Symfony</figcaption>
+                </figure>
+            </div>
+        </p>
+
+        <p class="mt-3">
+            Que se passe-t-il si je demarre mon application sans contrôleur ? Dans le dossier de votre projet saisissez <kbd>symfony serve</kbd>.
+            Cette commande va démarrer le serveur interne de PHP sur le port 8000. <br>
+            Vous pouvez donc accéder à votre application via <mark>localhost:8000</mark> ou <mark>127.0.0.1:8000</mark>.
+
+            <div class="text-center">
+                <figure class="figure">
+                    <img src="../../images/symfony_premiere_page.PNG" class="img-fluid rounded" alt="première page symfony">
+                    <figcaption class="figure-caption text-right">Première page de Symfony</figcaption>
+                </figure>
+            </div>
+
+            Vous voilà sur votre application Symfony ! Ou plutôt sur sa page 404 ; car comme nous n'avons pas de contrôleur, ni de route de créée le Kernel ne trouve rien et nous retourne une 404 ! <br>
+            Si vous regarder en bas à droite de la page vous pouvez cliquer sur le logo Symfony qui vous ouvrira la barre de débogue et vous verrez bien en rouge la 404.
+        </p>
+    </section>
+</main>
+
+<script src="../../scripts/prism.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
+        crossorigin="anonymous"></script>
+</body>
+</html>
