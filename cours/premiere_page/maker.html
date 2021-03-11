@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+          integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <link rel="stylesheet" href="../../styles/prism.css">
+    <title>Symfony 5 - Première page - Maker</title>
+</head>
+
+<body>
+<main class="container">
+    <h1 class="display-1">Le "maker" de Symfony</h1>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Ajout du Maker</h2>
+
+        <p class="mt-3">
+            Symfony possède un <mark>Maker Bundle</mark> qui, en phase de développement, améliore grandement la productivité.
+            <br>
+            Vérifions s'il est installé dans votre fichier <em>composer.json</em> :
+
+            <pre class="line-numbers" data-line="49" data-start="43"><code class="language-js">
+        // ...
+    "require-dev": {
+        "symfony/browser-kit": "^5.2",
+        "symfony/css-selector": "^5.2",
+        "symfony/debug-bundle": "^5.2",
+        "symfony/maker-bundle": "^1.29",
+        "symfony/phpunit-bridge": "^5.2",
+        "symfony/stopwatch": "^5.2",
+        "symfony/var-dumper": "^5.2",
+        "symfony/web-profiler-bundle": "^5.2"
+    },
+        //...
+            </code></pre>
+        </p>
+
+        <p>
+            S'il n'est pas installé, dans votre terminal, aller dans le répertoire de votre projet et saisissez la comande <kbd>symfony composer req maker --dev</kbd>.
+            <br>
+            Expliquons cette commande :
+            <ul>
+                <li><kbd>symfony</kbd> : appel de la console de Symfony</li>
+                <li><kbd>composer</kbd> : appel à Composer. Il faut noter qu'on pourrait l'appeler seul, mais en le couplant à la comsole Symfony, on est sûr d'obtenir la version du package pour Symfony.</li>
+                <li><kbd>req</kbd> : indique d'on requiert un package</li>
+                <li><kbd>maker</kbd> : le package requis ; ici <mark>symfony/maker-bundle</mark></li>
+                <li><kbd>--dev</kbd> : on indique que le package ne sera requis pour l'environnement de développement</li>
+            </ul>
+        </p>
+
+        <p>
+            Il devrait maintenant apparaître.
+        </p>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Quoi de neuf dans la console ?</h2>
+
+        <p class="mt-3">
+            Si dans votre terminal, vous saisissez <kbd>symfony console</kbd>, vous devriez voir beaucoup de choses apparaitre :
+        <pre class="bg-dark text-white"><code>
+    λ symfony console
+    Symfony 5.2.5 (env: dev, debug: true)
+
+    Usage:
+      command [options] [arguments]
+
+    Options:
+      -h, --help            Display help for the given command. When no command is given display help for the list command
+      -q, --quiet           Do not output any message
+      -V, --version         Display this application version
+          --ansi            Force ANSI output
+          --no-ansi         Disable ANSI output
+      -n, --no-interaction  Do not ask any interactive question
+      -e, --env=ENV         The Environment name. [default: "dev"]
+          --no-debug        Switch off debug mode.
+      -v|vv|vvv, --verbose  Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
+
+    Available commands:
+      about                                      Display information about the current project
+      help                                       Display help for a command
+      list                                       List commands
+     assets
+      assets:install                             Install bundle's web assets under a public directory
+     cache
+      cache:clear                                Clear the cache
+      cache:pool:clear                           Clear cache pools
+      cache:pool:delete                          Delete an item from a cache pool
+      cache:pool:list                            List available cache pools
+      cache:pool:prune                           Prune cache pools
+      cache:warmup                               Warm up an empty cache
+     config
+      config:dump-reference                      Dump the default configuration for an extension
+     dbal
+      dbal:run-sql                               Executes arbitrary SQL directly from the command line.
+     debug
+      debug:autowiring                           List classes/interfaces you can use for autowiring
+      debug:config                               Dump the current configuration for an extension
+      debug:container                            Display current services for an application
+      debug:event-dispatcher                     Display configured listeners for an application
+      debug:form                                 Display form type information
+      debug:router                               Display current routes for an application
+      debug:translation                          Display translation messages information
+      debug:twig                                 Show a list of twig functions, filters, globals and tests
+      debug:validator                            Display validation constraints for classes
+     doctrine
+      doctrine:cache:clear-collection-region     Clear a second-level cache collection region
+      doctrine:cache:clear-entity-region         Clear a second-level cache entity region
+      doctrine:cache:clear-metadata              Clears all metadata cache for an entity manager
+      doctrine:cache:clear-query                 Clears all query cache for an entity manager
+      doctrine:cache:clear-query-region          Clear a second-level cache query region
+      doctrine:cache:clear-result                Clears result cache for an entity manager
+      doctrine:database:create                   Creates the configured database
+      doctrine:database:drop                     Drops the configured database
+      doctrine:database:import                   Import SQL file(s) directly to Database.
+      doctrine:ensure-production-settings        Verify that Doctrine is properly configured for a production environment
+      doctrine:mapping:convert                   [orm:convert:mapping] Convert mapping information between supported formats
+      doctrine:mapping:import                    Imports mapping information from an existing database
+      doctrine:mapping:info
+      doctrine:migrations:current                [current] Outputs the current version
+      doctrine:migrations:diff                   [diff] Generate a migration by comparing your current database to your mapping information.
+      doctrine:migrations:dump-schema            [dump-schema] Dump the schema for your database to a migration.
+      doctrine:migrations:execute                [execute] Execute one or more migration versions up or down manually.
+      doctrine:migrations:generate               [generate] Generate a blank migration class.
+      doctrine:migrations:latest                 [latest] Outputs the latest version
+      doctrine:migrations:list                   [list-migrations] Display a list of all available migrations and their status.
+      doctrine:migrations:migrate                [migrate] Execute a migration to a specified version or the latest available version.
+      doctrine:migrations:rollup                 [rollup] Rollup migrations by deleting all tracked versions and insert the one version that exists.
+      doctrine:migrations:status                 [status] View the status of a set of migrations.
+      doctrine:migrations:sync-metadata-storage  [sync-metadata-storage] Ensures that the metadata storage is at the latest version.
+      doctrine:migrations:up-to-date             [up-to-date] Tells you if your schema is up-to-date.
+      doctrine:migrations:version                [version] Manually add and delete migration versions from the version table.
+      doctrine:query:dql                         Executes arbitrary DQL directly from the command line
+      doctrine:query:sql                         Executes arbitrary SQL directly from the command line.
+      doctrine:schema:create                     Executes (or dumps) the SQL needed to generate the database schema
+      doctrine:schema:drop                       Executes (or dumps) the SQL needed to drop the current database schema
+      doctrine:schema:update                     Executes (or dumps) the SQL needed to update the database schema to match the current mapping metadata
+      doctrine:schema:validate                   Validate the mapping files
+     lint
+      lint:container                             Ensure that arguments injected into services match type declarations
+      lint:twig                                  Lint a template and outputs encountered errors
+      lint:xliff                                 Lint an XLIFF file and outputs encountered errors
+      lint:yaml                                  Lint a file and outputs encountered errors
+     make
+      make:auth                                  Creates a Guard authenticator of different flavors
+      make:command                               Creates a new console command class
+      make:controller                            Creates a new controller class
+      make:crud                                  Creates CRUD for Doctrine entity class
+      make:docker:database                       Adds a database container to your docker-compose.yaml file
+      make:entity                                Creates or updates a Doctrine entity class, and optionally an API Platform resource
+      make:fixtures                              Creates a new class to load Doctrine fixtures
+      make:form                                  Creates a new form class
+      make:message                               Creates a new message and handler
+      make:messenger-middleware                  Creates a new messenger middleware
+      make:migration                             Creates a new migration based on database changes
+      make:registration-form                     Creates a new registration form system
+      make:reset-password                        Create controller, entity, and repositories for use with symfonycasts/reset-password-bundle
+      make:serializer:encoder                    Creates a new serializer encoder class
+      make:serializer:normalizer                 Creates a new serializer normalizer class
+      make:subscriber                            Creates a new event subscriber class
+      make:test                                  [make:unit-test|make:functional-test] Creates a new test class
+      make:twig-extension                        Creates a new Twig extension class
+      make:user                                  Creates a new security user class
+      make:validator                             Creates a new validator and constraint class
+      make:voter                                 Creates a new security voter class
+     router
+      router:match                               Help debug routes by simulating a path info match
+     secrets
+      secrets:decrypt-to-local                   Decrypt all secrets and stores them in the local vault
+      secrets:encrypt-from-local                 Encrypt all local secrets to the vault
+      secrets:generate-keys                      Generate new encryption keys
+      secrets:list                               List all secrets
+      secrets:remove                             Remove a secret from the vault
+      secrets:set                                Set a secret in the vault
+     security
+      security:encode-password                   Encode a password
+     server
+      server:dump                                Start a dump server that collects and displays dumps in a single place
+      server:log                                 Start a log server that displays logs in real time
+     translation
+      translation:update                         Update the translation file
+            </code></pre>
+        </p>
+
+        <p class="lead text-center">
+            Gardez cette commande en tête elle vous servira si vous êtes perdu.
+        </p>
+
+        <p>
+            Notez que la console peut vous permettre de faire beaucoup de choses automatiquement : vider les caches, contrôler les routes, la configuration, les logs, générer des formulaires, etc ...
+            <br>
+            Testons les routes pour voir ! Saisissez dans la console <kbd>symfony console debug:router</kbd>.
+            <pre class="bg-dark text-white"><code>
+    λ symfony console debug:router
+    -------------------------- -------- -------- ------ -----------------------------------
+    Name                       Method   Scheme   Host   Path
+    -------------------------- -------- -------- ------ -----------------------------------
+    _preview_error             ANY      ANY      ANY    /_error/{code}.{_format}
+    _wdt                       ANY      ANY      ANY    /_wdt/{token}
+    _profiler_home             ANY      ANY      ANY    /_profiler/
+    _profiler_search           ANY      ANY      ANY    /_profiler/search
+    _profiler_search_bar       ANY      ANY      ANY    /_profiler/search_bar
+    _profiler_phpinfo          ANY      ANY      ANY    /_profiler/phpinfo
+    _profiler_search_results   ANY      ANY      ANY    /_profiler/{token}/search/results
+    _profiler_open_file        ANY      ANY      ANY    /_profiler/open
+    _profiler                  ANY      ANY      ANY    /_profiler/{token}
+    _profiler_router           ANY      ANY      ANY    /_profiler/{token}/router
+    _profiler_exception        ANY      ANY      ANY    /_profiler/{token}/exception
+    _profiler_exception_css    ANY      ANY      ANY    /_profiler/{token}/exception.css
+    -------------------------- -------- -------- ------ -----------------------------------
+            </code></pre>
+        </p>
+
+        <p>
+            On constate bien ici qu'il n'existe que les routes du profiler (la barre de débogue en bas de votre page web), ainsi que celles des erreurs.
+            <br>
+            Allons créer notre première page pour voir ce que ça change !
+        </p>
+    </section>
+</main>
+
+<script src="../../scripts/prism.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
+        crossorigin="anonymous"></script>
+</body>
