@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+
+<html lang="fr" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+          integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <link rel="stylesheet" href="../../styles/prism.css">
+    <title>Symfony 5 - Données et formulaires - Le repository, l'entrepôts de mes données</title>
+</head>
+
+<body>
+<main class="container">
+    <h1 class="display-1">Le repository</h1>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Rôle du repository</h2>
+
+        <p>
+            Le <dfn>repository</dfn> fait le lien avec la base données, c'est lui qui détient les requêtes qui séront passées à celle-ci.
+            Néanmoins, l'utilisation de l'ORM Doctrine rend le contenu de ce fichier, initialement succinct.
+
+            <pre class="line-numbers"><code class="language-php">
+    namespace App\Repository;
+
+    use App\Entity\Post;
+    use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+    use Doctrine\Persistence\ManagerRegistry;
+
+    /**
+     * @method Post|null find($id, $lockMode = null, $lockVersion = null)
+     * @method Post|null findOneBy(array $criteria, array $orderBy = null)
+     * @method Post[]    findAll()
+     * @method Post[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+     */
+    class PostRepository extends ServiceEntityRepository
+    {
+        public function __construct(ManagerRegistry $registry)
+        {
+            parent::__construct($registry, Post::class);
+        }
+
+        // /**
+        //  * @return Post[] Returns an array of Post objects
+        //  */
+        /*
+        public function findByExampleField($value)
+        {
+            return $this->createQueryBuilder('p')
+                ->andWhere('p.exampleField = :val')
+                ->setParameter('val', $value)
+                ->orderBy('p.id', 'ASC')
+                ->setMaxResults(10)
+                ->getQuery()
+                ->getResult()
+            ;
+        }
+        */
+
+        /*
+        public function findOneBySomeField($value): ?Post
+        {
+            return $this->createQueryBuilder('p')
+                ->andWhere('p.exampleField = :val')
+                ->setParameter('val', $value)
+                ->getQuery()
+                ->getOneOrNullResult()
+            ;
+        }
+        */
+    }
+            </code></pre>
+
+            Ici on voit bien, qu'hormis le constructeur, les autres méthodes sont commentées. Elles sont données, à titre d'exemple, dans le cas où nous souhaiterions effectuées des requêtes personnalisées.
+            Les commentaires de classe indiquent les méthodes induites par Doctrine.
+        </p>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Passer les données au contrôleur</h2>
+
+        <p>
+            Afin de pouvoir envoyer les données de ma base à mon contrôleur, il me faut récupérer un objet dans celui-ci. Pour cela, on va <strong>injecter</strong> la classe au contrôleur.
+            Comme on lui ajoute un nouvel élément, on va devoir ajouter un constructeur.
+
+            <pre class="line-numbers" data-line="4,5,12,14,15,16,17,24,26"><code class="language-php">
+    namespace App\Controller;
+
+    use App\Entity\Post;
+    use Doctrine\ORM\EntityManagerInterface;
+    use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+    use Symfony\Component\HttpFoundation\Response;
+    use Symfony\Component\Routing\Annotation\Route;
+
+    class PostController extends AbstractController
+    {
+        private EntityManagerInterface $entityManager;
+
+        public function __construct(EntityManagerInterface $entityManager)
+        {
+            $this->entityManager = $entityManager;
+        }
+
+        /**
+         * @Route("/post", name="post")
+         */
+        public function index(): Response
+        {
+            $posts = $this->entityManager->getRepository(Post::class)->findAll();
+
+            dd($posts);
+
+            return $this->render('post/index.html.twig', [
+                'controller_name' => 'PostController',
+            ]);
+        }
+    }
+            </code></pre>
+
+            <ul>
+                <li>A la ligne 12 je créé la propriété qui me servira à communiquer avec la base de données.</li>
+                <li>Je l'initialise dans le constructeur ligne 14.</li>
+                <li>Ligne 24, je lui demande d'aller me chercher le repository <strong>Post</strong> pour qu'il me <i>trouve tous</i> les articles</li>
+            </ul>
+
+        <div class="text-center">
+            <figure class="figure">
+                <img src="../../images/symfony_dd_post.PNG" class="img-fluid rounded" alt="var_dump die symfony">
+                <figcaption class="figure-caption text-right">La methode <kbd>dd($posts)</kbd> sert à déboguer en stoppant l'execution du code et en affichant son paramètre.</figcaption>
+            </figure>
+        </div>
+        </p>
+    </section>
+</main>
+
+<script src="../../scripts/prism.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
+        crossorigin="anonymous"></script>
+</body>
+</html>
