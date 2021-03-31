@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+
+<html lang="fr" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+          integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <link rel="stylesheet" href="../../styles/prism.css">
+    <title>Symfony 5 - Données et formulaires - Personnalisation de formulaire</title>
+</head>
+
+<body>
+<main class="container">
+    <h1 class="display-1">Personnaliser ses formulaires</h1>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Le formulaire Type avancé</h2>
+
+        <p class="mt-3">
+            Vous avez vu que dans le fichier <kbd>PostType.php</kbd> on construit notre formulaire en y ajoutant des champs.
+            Mais la méthode <kbd>add()</kbd> de <kbd>FormBuilderInterface</kbd> peut faire bien plus de choses.
+            Comme c'est sur ce fichier que se base la génération du formulaire, on peut y paramétrer beaucoup de choses.
+        </p>
+
+        <p class="mt-3">
+            La première chose que l'on peut faire c'est choisir le <a href="https://symfony.com/doc/current/reference/forms/types.html">type de champs</a>.
+            A l'instar du bouton de validation on peut ajouter un type sur les autres champs.
+        </p>
+
+        <pre class="line-numbers" data-line="17-19"><code class="language-php">
+    namespace App\Form;
+
+    use App\Entity\Post;
+    use Symfony\Component\Form\AbstractType;
+    use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+    use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+    use Symfony\Component\Form\Extension\Core\Type\TextType;
+    use Symfony\Component\Form\FormBuilderInterface;
+    use Symfony\Component\OptionsResolver\OptionsResolver;
+
+    class PostType extends AbstractType
+    {
+        public function buildForm(FormBuilderInterface $builder, array $options)
+        {
+            $builder
+                ->add('title',TextType::class)
+                ->add('content', TextareaType::class)
+                ->add('save', SubmitType::class)
+            ;
+        }
+
+        public function configureOptions(OptionsResolver $resolver)
+        {
+            $resolver->setDefaults([
+                'data_class' => Post::class,
+            ]);
+        }
+    }
+        </code></pre>
+
+        <p class="mt-3">
+            On peut aussi lui passer un tableau de paramètres contenant les informations qu'on saisirait habituellement dans le code HTML.
+        </p>
+
+        <pre class="line-numbers" data-line="17-31"><code class="language-php">
+    namespace App\Form;
+
+    use App\Entity\Post;
+    use Symfony\Component\Form\AbstractType;
+    use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+    use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+    use Symfony\Component\Form\Extension\Core\Type\TextType;
+    use Symfony\Component\Form\FormBuilderInterface;
+    use Symfony\Component\OptionsResolver\OptionsResolver;
+
+    class PostType extends AbstractType
+    {
+        public function buildForm(FormBuilderInterface $builder, array $options)
+        {
+            $builder
+                ->add('title',TextType::class, [
+                    'label' => 'Titre de votre article',
+                    'attr' => [
+                        'placeholder' => 'Mon article'
+                    ]
+                ])
+                ->add('content', TextareaType::class, [
+                    'label' => 'Votre article',
+                    'attr' => [
+                        'placeholder' => 'Ce que vous avez à dire !'
+                    ]
+                ])
+                ->add('save', SubmitType::class, [
+                    'label' => 'Sauvegarder mon article'
+                ])
+            ;
+        }
+
+        public function configureOptions(OptionsResolver $resolver)
+        {
+            $resolver->setDefaults([
+                'data_class' => Post::class,
+            ]);
+        }
+    }
+        </code></pre>
+
+        <p class="mt-3">
+            De la même manière que l'on ajoute des attriuts aux balises HTML, le tableau d'options permet d'en faire de même à partir de l'objet PHP.
+        </p>
+</section>
+</main>
+
+<script src="../../scripts/prism.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
+        crossorigin="anonymous"></script>
+</body>
+</html>
