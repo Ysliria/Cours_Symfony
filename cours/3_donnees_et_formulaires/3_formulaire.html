@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html lang="fr" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+          integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <link rel="stylesheet" href="../../styles/prism.css">
+    <title>Symfony 5 - Données et formulaires - Formulaires</title>
+</head>
+
+<body>
+<main class="container">
+    <h1 class="display-1">Les formulaires</h1>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Création d'un formulaire</h2>
+
+        <p class="mt-3">
+            Nous avons donc une entité qui représente notre base de données et nous avons saisi les données dans
+            celle-ci directement.
+            Cependant le but est bien de les saisir via un fomulaire.<br>
+            La console de Symfony va donc une nouvelle fois nous aider avec <kbd>symfony console make:form</kbd>.
+        </p>
+
+        <pre class="bg-dark"><code class="text-white">
+    λ symfony console make:form
+
+     The name of the form class (e.g. GentleGnomeType):
+     > PostType
+
+     The name of Entity or fully qualified model class name that the new form will be bound to (empty for none):
+     > Post
+    Post
+
+     created: src/Form/PostType.php
+
+
+      Success!
+
+
+     Next: Add fields to your form and start using it.
+     Find the documentation at https://symfony.com/doc/current/forms.html
+        </code></pre>
+
+        <p class="mt-3">
+            Deux choses sont demandées, le nom que l'on donnera à ce type de formulaire et, si on souhaite le lier à une entité, le nom de celle-ci.
+            Nous avons donc créer un formulaire lié à notre entité <kbd>Post.php</kbd>.
+            Le résultat est la création, dans un dossier <kbd>Form</kbd>, de notre type de formulaire <kbd>PostType.php</kbd>.
+        </p>
+
+        <pre class="line-numbers"><code class="language-php">
+    namespace App\Form;
+
+    use App\Entity\Post;
+    use Symfony\Component\Form\AbstractType;
+    use Symfony\Component\Form\FormBuilderInterface;
+    use Symfony\Component\OptionsResolver\OptionsResolver;
+
+    class PostType extends AbstractType
+    {
+        public function buildForm(FormBuilderInterface $builder, array $options)
+        {
+            $builder
+                ->add('title')
+                ->add('content')
+            ;
+        }
+
+        public function configureOptions(OptionsResolver $resolver)
+        {
+            $resolver->setDefaults([
+                'data_class' => Post::class,
+            ]);
+        }
+    }
+        </code></pre>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Utilisation du formulaire</h2>
+
+        <p class="mt-3">
+            Pour pouvoir utiliser le formulaire, nous allons créer une nouvelle méthode dans notre contrôleur et la route associée.
+            Il faudra aussi créer la vue.
+        </p>
+
+        <pre class="line-numbers" data-line="36-48"><code class="language-php">
+    namespace App\Controller;
+
+    use App\Entity\Post;
+    use App\Form\PostType;
+    use Doctrine\ORM\EntityManagerInterface;
+    use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+    use Symfony\Component\HttpFoundation\Request;
+    use Symfony\Component\HttpFoundation\Response;
+    use Symfony\Component\Routing\Annotation\Route;
+
+    class PostController extends AbstractController
+    {
+        private EntityManagerInterface $entityManager;
+
+        public function __construct(EntityManagerInterface $entityManager)
+        {
+            $this->entityManager = $entityManager;
+        }
+
+        /**
+         * @Route("/post", name="post")
+         */
+        public function index(): Response
+        {
+            $posts = $this->entityManager->getRepository(Post::class)->findAll();
+
+            return $this->render(
+                'post/index.html.twig',
+                [
+                    'controller_name' => 'PostController',
+                ]
+            );
+        }
+
+        /**
+         * @Route("/post/new", name="new_post")
+         */
+        public function new(Request $request)
+        {
+            $post = new Post();
+            $form = $this->createForm(PostType::class, $post);
+
+            return $this->render(
+                'post/new.html.twig',
+                ['form' => $form->createView()]
+            );
+        }
+    }
+        </code></pre>
+
+        <ol class="my-3">
+            <li>Ici on n'a créé une nouvelle méthode <kbd>new()</kbd> et sa route, afin d'avoir un formulaire pour ajouter de nouveaux articles.</li>
+            <li>La méthode prendra en paramètre la requête <kbd>$request</kbd>(elle sera envoyé par le formulaire).</li>
+            <li>Nous y créons une nouvelle variable qui correspondra à l'objet de notre entité <kbd>$post</kbd>, et une autre pour représenter notre fomulaire <kbd>$form</kbd>.</li>
+            <li>Ensuite nous demandons la création du formulaire en lui passant en paramêtre le type de formulaire souhaité et le modèle de données sur lequel il doit se reposer <kbd>$this->createForm(PostType::class, $post)</kbd></li>
+            <li>On passe la donnée à la vue !</li>
+        </ol>
+
+        <pre class="line-numbers" data-line="36-48"><code class="language-twig">
+    {# templates/post/new.html.twig #}
+    {{ form(form) }}
+        </code></pre>
+
+        <p class="mt-3">
+            Voyez la simplicité dans la création d'un fomulaire. On utilise le tag <kbd>{{ form() }}</kbd> de Twig auquel on passe notre formlaire venu du contrôleur en paramètre.
+        </p>
+
+        <div class="text-center">
+            <figure class="figure">
+                <img src="../../images/symfony_form.PNG" class="img-fluid rounded" alt="formulaire auto-généré symfony">
+                <figcaption class="figure-caption text-right">
+                    Formulaire auto-généré.
+                </figcaption>
+            </figure>
+        </div>
+
+        <p class="mt-3">
+            Si vous regardez le code généré, vous,constaterez la présence d'un champs caché <kbd>post__token</kbd> qui a pour but la protection du formulaire.
+            Notez aussi que nous n'avons pas de bouton de validation !
+        </p>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Traitement du formulaire</h2>
+
+        <p class="mt-3">
+            Afin de pouvoir traiter le formulaire, nous allons simplement ajouter un bouton de validation dans le fichier qui le défini <kbd>PostType.php</kbd>.
+            Nous reviendrons sur la personnalisation de ce fichier ultérieuement.
+        </p>
+
+        <pre class="line-numbers" data-line="6,17"><code class="language-php">
+    namespace App\Form;
+
+    use App\Entity\Post;
+    use Symfony\Component\Form\AbstractType;
+    use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+    use Symfony\Component\Form\FormBuilderInterface;
+    use Symfony\Component\OptionsResolver\OptionsResolver;
+
+    class PostType extends AbstractType
+    {
+        public function buildForm(FormBuilderInterface $builder, array $options)
+        {
+            $builder
+                ->add('title')
+                ->add('content')
+                ->add('save', SubmitType::class)
+            ;
+        }
+
+        public function configureOptions(OptionsResolver $resolver)
+        {
+            $resolver->setDefaults([
+                'data_class' => Post::class,
+            ]);
+        }
+    }
+        </code></pre>
+
+        <p class="mt-3">
+            Maintenant que nous avons un bouton de validation pour notre formulaire il est temps de le traiter ! <br>
+            Pour cela il va falloir recupérer les données, valider celles-ci et les envoyer en base de données.
+        </p>
+
+        <pre class="line-numbers" data-line="44-51"><code class="language-php">
+    namespace App\Controller;
+
+    use App\Entity\Post;
+    use App\Form\PostType;
+    use Doctrine\ORM\EntityManagerInterface;
+    use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+    use Symfony\Component\HttpFoundation\Request;
+    use Symfony\Component\HttpFoundation\Response;
+    use Symfony\Component\Routing\Annotation\Route;
+
+    class PostController extends AbstractController
+    {
+        private EntityManagerInterface $entityManager;
+
+        public function __construct(EntityManagerInterface $entityManager)
+        {
+            $this->entityManager = $entityManager;
+        }
+
+        /**
+         * @Route("/post", name="post")
+         */
+        public function index(): Response
+        {
+            $posts = $this->entityManager->getRepository(Post::class)->findAll();
+
+            return $this->render(
+                'post/index.html.twig',
+                [
+                    'controller_name' => 'PostController',
+                ]
+            );
+        }
+
+        /**
+         * @Route("/post/new", name="new_post")
+         */
+        public function new(Request $request)
+        {
+            $post = new Post();
+            $form = $this->createForm(PostType::class, $post);
+
+            $form->handleRequest($request);
+
+            if ($form->isSubmitted() && $form->isValid()) {
+                $post = $form->getData();
+
+                $this->entityManager->persist($post);
+                $this->entityManager->flush();
+            }
+
+            return $this->render(
+                'post/new.html.twig',
+                ['form' => $form->createView()]
+            );
+        }
+    }
+        </code></pre>
+
+        <ol class="mt-3">
+            <li>Je demande au formulaire de gérer la requête <kbd>$form->handleRequest($request)</kbd></li>
+            <li>Ensuite, si la requête est soumise et valide, j'affecte les données du formulaire à mon objet <kbd>$post = $form->getData()</kbd></li>
+            <li>Ensuite je demande à mon <i>entityManager</i> de persister l'objet <kbd>$this->entityManager->persist($post)</kbd></li>
+            <li>Et enfin je le sauvegarde en base de données <kbd>$this->entityManager->flush()</kbd></li>
+        </ol>
+
+        <div class="text-center">
+            <figure class="figure">
+                <img src="../../images/symfony_bdd_save.PNG" class="img-fluid rounded" alt="bdd">
+                <figcaption class="figure-caption text-right">
+                    Les données sont bien en base de données.
+                </figcaption>
+            </figure>
+        </div>
+    </section>
+</main>
+
+<script src="../../scripts/prism.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
+        crossorigin="anonymous"></script>
+</body>
+</html>
