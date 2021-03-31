@@ -18,7 +18,7 @@
     <section class="mt-5">
         <h2 class="text-muted">Doctrine l'ORM de Symfony</h2>
 
-        <p>
+        <p class="mt-3">
             Afin de gérer les problématiques de connexion et de requétage à la base de données, les frameworks mordernes utilisent ce que l'on appele des <abbr title=" Object-Relational Mapping" class="initialism">ORM</abbr>.
             Symfony utilise <a href="https://symfony.com/doc/current/doctrine.html">Doctrine</a> comme ORM. Le but étant de permettre de faire la relation entre les données en base et leur représentation sous forme d'objet dans notre application.
             De plus, cela simplifiera aussi nos requêtes à la base de données.
@@ -195,7 +195,7 @@
         Une fois de plus la console nous créer un fichier. Il s'agit du fichier de migration qui indique les changements qui on été effectués et qui seront executé en base de données avec la commande suivante, proposée par la console : <kbd>symfony console doctrine:migrations:migrate</kbd>.
         </p>
 
-        <p class="bt-3">
+        <p class="mt-3">
             Cette nouvelle commande va nous permettre d'effectuer la migration de la base de données, afin que son schéma corresponde à nos objets (entités) présent dans le code.
 
             <pre class="bg-dark text-white"><code>
