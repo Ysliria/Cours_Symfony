@@ -110,7 +110,33 @@
         <p class="mt-3">
             De la même manière que l'on ajoute des attriuts aux balises HTML, le tableau d'options permet d'en faire de même à partir de l'objet PHP.
         </p>
-</section>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">L'affichage côté Twig</h2>
+
+        <p class="mt-3">
+            Tout comme dans le fichier <kbd>PostType.php</kbd>, il est possible de modifier le fichier <kbd>new.html.twig</kbd>. Pour cela il nous faudra indiquer le début et la fin du formulaire.
+            Si on ne met rien à l'intérieur de ces délimitations, le formulaire sera identique à celui généré par <kbd>{{form(form}}</kbd>.
+            Sinon on peut déterminer l'ordre des champs plaçant chaque ligne du formulaire comme on le souhaite.
+        </p>
+
+        <pre class="line-numbers"><code class="language-twig">
+    {# templates/post/new.html.twig #}
+
+    {{ form_start(form) }}
+        {{ form_row(form.content) }}
+        {{ form_row(form.title) }}
+    {{ form_end(form) }}
+        </code></pre>
+
+        <p class="mt-3">
+            Beaucoup d'autres éléments peuvent être définis dans le template. Par exemple pour définir les erreurs, les informations, etc ...
+            La <a href="https://symfony.com/doc/current/form/form_customization.html">documentation</a> vous aidera à trouver ce dont vous avez besoin.
+        </p>
+    </section>
 </main>
 
 <script src="../../scripts/prism.js"></script>
