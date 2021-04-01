@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+
+<html lang="fr" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+          integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <link rel="stylesheet" href="../../styles/prism.css">
+    <title>Symfony 5 - Authentification & autorisation - Authentification</title>
+</head>
+
+<body>
+<main class="container">
+    <h1 class="display-1">Authentification</h1>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Le maker User</h2>
+
+        <p class="mt-3">
+            Nul doute que si un composant mérite l'attention accrue des développeurs c'est celui qui concerne l'authentidication.
+            Mais Symfony étant orienté productivité et sécurité, c'est une chose qui a d'office été intégrée dans ces composants de base.
+            <br>
+            Si on affiche la console, on trouvera surement de quoi nous aider !
+        </p>
+
+        <pre class="bg-dark"><code class="text-white">
+    λ symfony console
+    [...]
+     make
+      make:auth                                  Creates a Guard authenticator of different flavors
+      make:command                               Creates a new console command class
+      make:controller                            Creates a new controller class
+      make:crud                                  Creates CRUD for Doctrine entity class
+      make:docker:database                       Adds a database container to your docker-compose.yaml file
+      make:entity                                Creates or updates a Doctrine entity class, and optionally an API Platform resource
+      make:fixtures                              Creates a new class to load Doctrine fixtures
+      make:form                                  Creates a new form class
+      make:message                               Creates a new message and handler
+      make:messenger-middleware                  Creates a new messenger middleware
+      make:migration                             Creates a new migration based on database changes
+      make:registration-form                     Creates a new registration form system
+      make:reset-password                        Create controller, entity, and repositories for use with symfonycasts/reset-password-bundle
+      make:serializer:encoder                    Creates a new serializer encoder class
+      make:serializer:normalizer                 Creates a new serializer normalizer class
+      make:subscriber                            Creates a new event subscriber class
+      make:test                                  [make:unit-test|make:functional-test] Creates a new test class
+      make:twig-extension                        Creates a new Twig extension class
+      make:user                                  Creates a new security user class
+      make:validator                             Creates a new validator and constraint class
+      make:voter                                 Creates a new security voter class
+     router
+      router:match                               Help debug routes by simulating a path info match
+     secrets
+      secrets:decrypt-to-local                   Decrypt all secrets and stores them in the local vault
+      secrets:encrypt-from-local                 Encrypt all local secrets to the vault
+      secrets:generate-keys                      Generate new encryption keys
+      secrets:list                               List all secrets
+      secrets:remove                             Remove a secret from the vault
+      secrets:set                                Set a secret in the vault
+     security
+      security:encode-password                   Encode a password
+     server
+      server:dump                                Start a dump server that collects and displays dumps in a single place
+      server:log                                 Start a log server that displays logs in real time
+     translation
+      translation:update                         Update the translation file
+        </code></pre>
+
+        <p class="mt-3">
+            Il existe un maker appelé <kbd>make:user</kbd> qui sert à créer une classe sécurisée pour gérer les utilisateurs.
+            Et on trouve aussi une commande appelé <kbd>security:encode-password</kbd> qui sert à encoder des mots de passe.
+            Nous avons ici les bases. Essayons ça avec <kbd>symfony console make:user</kbd>
+        </p>
+
+        <pre class="bg-dark"><code class="text-white">
+    λ symfony console make:user
+
+     The name of the security user class (e.g. User) [User]:
+     >
+
+     Do you want to store user data in the database (via Doctrine)? (yes/no) [yes]:
+     >
+
+     Enter a property name that will be the unique "display" name for the user (e.g. email, username, uuid) [email]:
+     >
+
+     Will this app need to hash/check user passwords? Choose No if passwords are not needed or will be checked/hashed by some other system (e.g. a single sign-on server).
+
+     Does this app need to hash/check user passwords? (yes/no) [yes]:
+     >
+
+     created: src/Entity/User.php
+     created: src/Repository/UserRepository.php
+     updated: src/Entity/User.php
+     updated: config/packages/security.yaml
+
+
+      Success!
+
+
+     Next Steps:
+       - Review your new App\Entity\User class.
+       - Use make:entity to add more fields to your User entity and then run make:migration.
+       - Create a way to authenticate! See https://symfony.com/doc/current/security.html
+        </code></pre>
+
+        <p class="mt-3">
+            Le maker nous pose un certain nombre de questions concernant le nom de la classe, si on souhaite utiliser la base et la propriété qui sera unique pour nos utilisateurs (par défaut l'adresse email).
+            <br>
+            Une fois nos réponses données, le maker se charge de construire les bases de l'entité et du repository, et il modifie la configuration de la sécurité. Il nous propose aussi les prochaines étapes.
+        </p>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Encoder le mot de passe</h2>
+
+        <p class="mt-3">
+            Si vous avez besoin d'encoder un mot de passe, vous pouvez passer par la console en utilisant : <kbd>symfony console security:encode-password</kbd>.
+            Vous devrez saisir le texte à encoder et le laisser l'encoder.
+        </p>
+
+        <pre class="bg-dark"><code class="text-white">
+    λ symfony console security:encode
+
+    Symfony Password Encoder Utility
+    ================================
+
+     Type in your password to be encoded:
+     >
+
+     ------------------ ---------------------------------------------------------------------------------------------------
+      Key                Value
+     ------------------ ---------------------------------------------------------------------------------------------------
+      Encoder used       Symfony\Component\Security\Core\Encoder\MigratingPasswordEncoder
+      Encoded password   $argon2id$v=19$m=65536,t=4,p=1$dTBWTUJzUnMyZTY2WjVJNg$S5Y0R5plFGbVwOCt5GTYbyNqiEX4g6zZ/NVfa+1/dbk
+     ------------------ ---------------------------------------------------------------------------------------------------
+
+     ! [NOTE] Self-salting encoder used: the encoder generated its own built-in salt.
+
+
+     [OK] Password encoding succeeded
+
+        </code></pre>
+
+        <p class="mt-3">
+            Notez que lors de la saisie aucun caractère ne s'affiche.
+            <br>
+            Une fois la saisie validée, la console vous indique l'encodeur utilisé, ainsi que le mot de passe encodé.
+        </p>
+    </section>
+</main>
+
+<script src="../../scripts/prism.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
+        crossorigin="anonymous"></script>
+</body>
+</html>
