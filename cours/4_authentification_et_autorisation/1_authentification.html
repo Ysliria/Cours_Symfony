@@ -150,6 +150,155 @@
             Notez que lors de la saisie aucun caractère ne s'affiche.
             <br>
             Une fois la saisie validée, la console vous indique l'encodeur utilisé, ainsi que le mot de passe encodé.
+            Vous pouvez laintenant créer votre utilisateur en base de données.
+        </p>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Formulaire de connexion</h2>
+
+        <p class="mt-3">
+            Si on regarde la console de Symfony, on trouve dans nos makers un <kbd>make:auth</kbd> qui sert à créer l'authentification.
+            <br>
+            Essayons-le !
+        </p>
+
+        <pre class="bg-dark"><code class="text-white">
+    λ symfony console make:auth
+
+     What style of authentication do you want? [Empty authenticator]:
+      [0] Empty authenticator
+      [1] Login form authenticator
+     > 1
+    1
+
+     The class name of the authenticator to create (e.g. AppCustomAuthenticator):
+     > Authenticator
+
+     Choose a name for the controller class (e.g. SecurityController) [SecurityController]:
+     >
+
+     Do you want to generate a '/logout' URL? (yes/no) [yes]:
+     >
+
+     created: src/Security/Authenticator.php
+     updated: config/packages/security.yaml
+     created: src/Controller/SecurityController.php
+     created: templates/security/login.html.twig
+
+
+      Success!
+
+
+     Next:
+     - Customize your new authenticator.
+     - Finish the redirect "TODO" in the App\Security\Authenticator::onAuthenticationSuccess() method.
+     - Review & adapt the login template: templates/security/login.html.twig.
+        </code></pre>
+
+        <p class="mt-3">
+            Nous avons donc lancé la commande <kbd>symfony console make:auth</kbd> qui nous a posé plusieurs questions.
+            <br>
+            Nous avons donc choisi un formulaire de connexion classique, le nom de l'authentificateur et du contrôleur, et nous avons demandé une route de déconnexion.
+        </p>
+
+        <p class="mt-3">
+            La console s'est chargée de créer les fichier demandé et modifier le fichier de configuration de la sécurité.
+            Regardons de suite le <kbd>SecurityController.php</kbd>.
+        </p>
+
+        <pre class="line-numbers"><code class="language-php">
+    namespace App\Controller;
+
+    use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+    use Symfony\Component\HttpFoundation\Response;
+    use Symfony\Component\Routing\Annotation\Route;
+    use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+
+    class SecurityController extends AbstractController
+    {
+        /**
+         * @Route("/login", name="app_login")
+         */
+        public function login(AuthenticationUtils $authenticationUtils): Response
+        {
+            // if ($this->getUser()) {
+            //     return $this->redirectToRoute('target_path');
+            // }
+
+            // get the login error if there is one
+            $error = $authenticationUtils->getLastAuthenticationError();
+            // last username entered by the user
+            $lastUsername = $authenticationUtils->getLastUsername();
+
+            return $this->render('security/login.html.twig', ['last_username' => $lastUsername, 'error' => $error]);
+        }
+
+        /**
+         * @Route("/logout", name="app_logout")
+         */
+        public function logout()
+        {
+            throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
+        }
+    }
+        </code></pre>
+
+        <p class="mt-3">
+            On dispose donc d'une route <kbd>/login</kbd> pour effectuer notre connexion. Tentons de nous connecter avec l'utilisateur qu'on vient de créer en base.
+        </p>
+
+        <div class="text-center">
+            <figure class="figure">
+                <img src="../../images/symfony_login_error.PNG" class="img-fluid rounded" alt="login error symfony">
+                <figcaption class="figure-caption text-right">Il faut ajouter une redirection valide après la connexion</figcaption>
+            </figure>
+        </div>
+
+        <p class="mt-3">
+            Le débogueur de Symfony nous dit tout ce qu'il faut faire, ajouter une route valide pour effectuer la redirection après la connexion.
+            <br>
+            Donc nous allons rediriger l'utilisateur sur la liste des articles. Cette route s'appelle <i>post</i>, on va l'ajouter dans <kbd>Authenticator.php</kbd>.
+        </p>
+
+        <pre class="line-numbers" data-line="25"><code class="language-php">
+    namespace App\Security;
+
+    [...]
+
+    class Authenticator extends AbstractFormLoginAuthenticator implements PasswordAuthenticatedInterface
+    {
+        use TargetPathTrait;
+
+        public const LOGIN_ROUTE = 'app_login';
+
+        private $entityManager;
+        private $urlGenerator;
+        private $csrfTokenManager;
+        private $passwordEncoder;
+
+        [...]
+
+        public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $providerKey)
+        {
+            if ($targetPath = $this->getTargetPath($request->getSession(), $providerKey)) {
+                return new RedirectResponse($targetPath);
+            }
+
+            return new RedirectResponse($this->urlGenerator->generate('post'));
+        }
+
+        protected function getLoginUrl()
+        {
+            return $this->urlGenerator->generate(self::LOGIN_ROUTE);
+        }
+    }
+        </code></pre>
+
+        <p class="mt-3">
+            Tout fonctionne correctement on est bien redirigé !
         </p>
     </section>
 </main>
