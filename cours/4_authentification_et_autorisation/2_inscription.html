@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+
+<html lang="fr" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+          integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <link rel="stylesheet" href="../../styles/prism.css">
+    <title>Symfony 5 - Authentification & autorisation - Inscription</title>
+</head>
+
+<body>
+<main class="container">
+    <h1 class="display-1">Inscription</h1>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Le formulaire d'inscription</h2>
+
+        <p class="mt-3">
+            Nous avons créé un utilisateur à la main, mais si on souhaite permettre la connexion de plusieur utilisateurs, il serait bon qu'ils puissent s'inscrire par eux-même.
+            Pour se faire nous allons créer un formulaire d'inscription, mais aussi compléter l'entité utilisateur pour qu'elle soit cohérente avec un portail traditionnel.
+            <br>
+            Vous savez déjà créer une entité ; pour la modifier c'est la même chose, mais on précisera en nom d'entité celle sur laquelle nous souhaitons faire les modifications.
+        </p>
+
+        <pre class="bg-dark"><code class="text-white">
+    λ symfony console make:entity
+
+     Class name of the entity to create or update (e.g. BraveKangaroo):
+     > User
+    User
+
+     Your entity already exists! So let's add some new fields!
+
+     New property name (press &lt;return&gt; to stop adding fields):
+     > firstname
+
+     Field type (enter ? to see all types) [string]:
+     >
+
+
+     Field length [255]:
+     >
+
+     Can this field be null in the database (nullable) (yes/no) [no]:
+     >
+
+     updated: src/Entity/User.php
+
+     Add another property? Enter the property name (or press &lt;return&gt; to stop adding fields):
+     > lastname
+
+     Field type (enter ? to see all types) [string]:
+     >
+
+
+     Field length [255]:
+     >
+
+     Can this field be null in the database (nullable) (yes/no) [no]:
+     >
+
+     updated: src/Entity/User.php
+
+     Add another property? Enter the property name (or press &lt;return&gt; to stop adding fields):
+     >
+
+
+
+      Success!
+
+
+     Next: When you're ready, create a migration with php bin/console make:migration
+        </code></pre>
+
+        <p class="mt-3">
+            On prepare et on fait la migration et on s'attaque au formulaire.
+            Le formulaire sera lié à l'entité <i>User</i>.
+        </p>
+
+        <pre class="line-numbers" data-line="15"><code class="language-php">
+    namespace App\Form;
+
+    use App\Entity\User;
+    use Symfony\Component\Form\AbstractType;
+    use Symfony\Component\Form\FormBuilderInterface;
+    use Symfony\Component\OptionsResolver\OptionsResolver;
+
+    class UserType extends AbstractType
+    {
+        public function buildForm(FormBuilderInterface $builder, array $options)
+        {
+            $builder
+                ->add('email')
+                ->add('roles')
+                ->add('password')
+                ->add('firstname')
+                ->add('lastname')
+            ;
+        }
+
+        public function configureOptions(OptionsResolver $resolver)
+        {
+            $resolver->setDefaults([
+                'data_class' => User::class,
+            ]);
+        }
+    }
+        </code></pre>
+
+        <p class="mt-3">
+            On aura besoin du contrôleur et d'une route pour accéder à l'inscription.
+            <br>
+            Noter qu'on ne souhaite pas que l'utilisateur choisisse son rôle. On va donc le supprimer du formulaire !
+            <br>
+            Il va aussi nous falloir ajouter des validateurs et un champs de "confirmation" de mot de passe.
+        </p>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Mise en place du formulaire</h2>
+
+        <p class="mt-3">
+            Donc il nous faut une page et donc un contrôleur pour la gérer.
+            <br>
+            Pour se faire on utilise la console, on ajoute le formulaire au contôleur et on créé la vue.
+        </p>
+
+        <pre class="line-numbers"><code class="language-php">
+    namespace App\Controller;
+
+    use App\Entity\User;
+    use App\Form\UserType;
+    use Doctrine\ORM\EntityManagerInterface;
+    use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+    use Symfony\Component\HttpFoundation\Request;
+    use Symfony\Component\HttpFoundation\Response;
+    use Symfony\Component\Routing\Annotation\Route;
+
+    class RegisterController extends AbstractController
+    {
+        private EntityManagerInterface $entityManager;
+
+        public function __construct(EntityManagerInterface $entityManager)
+        {
+            $this->entityManager = $entityManager;
+        }
+
+        /**
+         * @Route("/register", name="register")
+         * @param \Symfony\Component\HttpFoundation\Request $request
+         *
+         * @return \Symfony\Component\HttpFoundation\Response
+         */
+        public function index(Request $request): Response
+        {
+            $user = new User();
+            $form = $this->createForm(UserType::class, $user);
+
+            $form->handleRequest($request);
+
+            if ($form->isSubmitted() && $form->isValid()) {
+                $user = $form->getData();
+
+                $this->entityManager->persist($user);
+                $this->entityManager->flush();
+            }
+
+
+            return $this->render('register/index.html.twig', [
+                'form' => $form->createView()
+            ]);
+        }
+    }
+        </code></pre>
+
+        <p class="mt-3">
+            Si vous faites cela on a bien le champs <i>rôle</i> qui n'apparait plus, mais on n'a pas non plus de password encodé dans la base.
+            Il faut donc ajouter l'encodage.
+        </p>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Amélioration du formulaire</h2>
+
+        <p class="mt-3">
+            Histoire de bien faire les choses on va, certe, encoder le mot de passe, mais surtout on va ajouter des <a href="https://symfony.com/doc/current/validation.html">validateurs.</a>
+            Il existe 2 façons de mettre en place les contraintes, via le formulaire ou via l'entité.
+        </p>
+
+        <h3 class="text-muted">Dans les entités</h3>
+        <pre class="line-numbers"><code class="language-php">
+[...]
+/**
+ * @ORM\Entity(repositoryClass=UserRepository::class)
+ */
+class User implements UserInterface
+{
+    /**
+     * @ORM\Id
+     * @ORM\GeneratedValue
+     * @ORM\Column(type="integer")
+     */
+    private ?int $id;
+
+    /**
+     * @Assert\NotBlank(
+     *     message = "Vous devez saisir une adresse mail !"
+     * )
+     * @Assert\Email(
+     *     message = "Le mail '{{ value }}' n'est pas un mail valide."
+     * )
+     * @ORM\Column(type="string", length=180, unique=true)
+     */
+    private ?string $email;
+
+    /**
+     * @ORM\Column(type="json")
+     */
+    private array $roles = [];
+
+    /**
+     * @var string The hashed password
+     * @Assert\NotBlank
+     * @ORM\Column(type="string")
+     */
+    private string $password;
+
+    /**
+     * @Assert\NotBlank
+     * @Assert\Length(
+     *      min = 2,
+     *      max = 50,
+     *      minMessage = "Votre nom doit être d'au moins {{ limit }} caractères de long",
+     *      maxMessage = "Votre nom ne doit pas faire plus de {{ limit }} caractères de long"
+     * )
+     * @ORM\Column(type="string", length=255)
+     */
+    private string $firstname;
+
+    /**
+     * @Assert\NotBlank
+     * @Assert\Length(
+     *      min = 2,
+     *      max = 50,
+     *      minMessage = "Votre prénom doit être d'au moins {{ limit }} caractères de long",
+     *      maxMessage = "Votre prénom ne doit pas faire plus de {{ limit }} caractères de long"
+     * )
+     * @ORM\Column(type="string", length=255)
+     */
+    private string $lastname;
+    [...]
+        </code></pre>
+
+        <p class="mt-3">
+            Noter qu'il s'agit ici d'annotations et que l'on peut leur ajouter divers paramètres.
+        </p>
+
+        <h3 class="text-muted">Dans les FormType</h3>
+        <pre class="line-numbers"><code class="language-php">
+    [...]
+    class UserType extends AbstractType
+    {
+        public function buildForm(FormBuilderInterface $builder, array $options)
+        {
+            $builder
+                ->add('firstname', TextType::class, [
+                    'required'    => true,
+                    'constraints' => [
+                        new Length(
+                            [
+                                'min' => 2,
+                                'max' => 50
+                            ]
+                        )
+                    ]
+                ])
+                ->add('lastname', TextType::class, [
+                    'required'    => true,
+                    'constraints' => [
+                        new Length(
+                            [
+                                'min' => 2,
+                                'max' => 50
+                            ]
+                        )
+                    ]
+                ])
+                ->add('email', EmailType::class)
+                ->add('password', PasswordType::class);
+        }
+    [...]
+        </code></pre>
+
+        <p class="mt-3">
+            Si on le fait au niveau de la création du formulaire, on doit passer pas un tableau d'options qui, après avoir déclaré le type de données, récupère dans la clef <i>constraints</i> un tableau de contraintes représentées par des objets.
+        </p>
+
+        <hr>
+
+        <p class="lead text-center">
+            Même si les deux sont possibles, gardez bien à l'esprit qu'il faut rester cohérent dans son code pour simplifier la maintenance.
+            Aussi vous verrez dans la documentation officielle qu'il est préférable de faire les validations côté entité.
+            On les fera côté FormType si nous n'avons pas de classes liées au formulaire.
+        </p>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Finalisation du formulaire</h2>
+
+        <p class="mt-3">
+            Maintenant nous devons ajouter la confirmation du mot de passe et compléter le formulaire (label, placeholder, etc ...).
+        </p>
+
+        <pre class="line-numbers" data-line="43-56"><code class="language-php">
+    [...]
+    class UserType extends AbstractType
+    {
+        public function buildForm(FormBuilderInterface $builder, array $options)
+        {
+            $builder
+                ->add('firstname', TextType::class, [
+                    'label'       => 'Votre prénom',
+                    'attr'        => [
+                        'placeholder' => 'Merci de saisir votre prénom.'
+                    ],
+                    'required'    => true,
+                    'constraints' => new Length(
+                        [
+                            'min' => 2,
+                            'max' => 50
+                        ]
+                    )
+                ])
+                ->add('lastname', TextType::class, [
+                    'label'       => 'Votre nom',
+                    'attr'        => [
+                        'placeholder' => 'Merci de saisir votre nom.'
+                    ],
+                    'required'    => true,
+                    'constraints' => [
+                        new Length(
+                            [
+                                'min' => 2,
+                                'max' => 50
+                            ]
+                        )
+                    ]
+                ])
+                ->add('email', EmailType::class, [
+                    'label' => 'Votre adresse mail',
+                    'attr'  => [
+                        'placeholder' => 'Merci de saisir votre adresse mail.'
+                    ],
+                    'required'    => true
+                ])
+                ->add('password', RepeatedType::class, [
+                    'type'            => PasswordType::class,
+                    'invalid_message' => 'Le mot de passe et la confirmation doivent être identique',
+                    'required'        => true,
+                    'first_options'   => [
+                        'label' => 'Mot de passe',
+                        'attr'  => ['placeholder' => 'Merci de saisir votre mot de passe.']
+                    ],
+                    'second_options'  => [
+                        'label' => 'Confirmez votre mot de passe',
+                        'attr'  => ['placeholder' => 'Merci de confirmer votre mot de passe.']
+                    ]
+                ])
+                ->add('register', SubmitType::class, [
+                    'label' => 'S\'inscrire'
+                ]);
+        }
+    [...]
+        </code></pre>
+
+        <p class="mt-3">
+            Observez bien la partie <i>password</i>. Pour pouvoir générer le champs de vérification du mot de passe, on demande à Symfony de nous créer un <a href="https://symfony.com/doc/current/reference/forms/types/repeated.html">RepeatedType</a>.
+            Ce type lui indique qu'il va devoir lier le fonctionnement des 2 champs du formulaire et surtout s'assurer qu'ils sont identiques.
+        </p>
+    </section>
+</main>
+
+<script src="../../scripts/prism.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
+        crossorigin="anonymous"></script>
+</body>
+</html>
