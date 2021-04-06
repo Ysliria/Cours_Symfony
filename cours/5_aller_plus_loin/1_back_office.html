@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+
+<html lang="fr" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+          integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <link rel="stylesheet" href="../../styles/prism.css">
+    <title>Symfony 5 - Aller plus loin - Le back-office</title>
+</head>
+
+<body>
+<main class="container">
+    <h1 class="display-1">Le back-office avec EasyAdmin</h1>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Installation de EasyAdmin</h2>
+
+        <p class="mt-3">
+            EasyAdmin est un des composant préconisé pour la gestion d'une interface d'administration.
+            Il est agrémenté d'un certain nombre de fonctionnalités qui permettent de rapidement créer le back-office d'un site.
+        </p>
+
+        <p class="mt-3">
+            Pour l'installer on utilise composer : <kbd>composer require easycorp/easyadmin-bundle</kbd>.
+            <br>
+            Une fois installé, interroger la console pour vois ce qui a été ajouter comme fonctionnalités.
+        </p>
+
+        <pre class="bg-dark"><code class="text-white">
+    λ symfony console
+    Symfony 5.2.5 (env: dev, debug: true)
+
+    Usage:
+      command [options] [arguments]
+
+    Options:
+      -h, --help            Display help for the given command. When no command is given display help for the list command
+      -q, --quiet           Do not output any message
+      -V, --version         Display this application version
+          --ansi            Force ANSI output
+          --no-ansi         Disable ANSI output
+      -n, --no-interaction  Do not ask any interactive question
+      -e, --env=ENV         The Environment name. [default: "dev"]
+          --no-debug        Switch off debug mode.
+      -v|vv|vvv, --verbose  Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
+
+    Available commands:
+      about                                      Display information about the current project
+      help                                       Display help for a command
+      list                                       List commands
+
+    [...]
+
+     make
+      make:admin:crud
+      make:admin:dashboard
+      make:admin:migration
+      make:auth                                  Creates a Guard authenticator of different flavors
+      make:command                               Creates a new console command class
+      make:controller                            Creates a new controller class
+      make:crud                                  Creates CRUD for Doctrine entity class
+
+    [...]
+        </code></pre>
+
+        <p class="mt-3">
+            On constate que 3 makers ont été ajoutés.
+        </p>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Utilisation de EasyAdmin</h2>
+
+        <p class="mt-3">
+            Donc maintenant qu'EasyAdmin est inbstallé nous pouvons créer notre premier "<i>Dashboard</i>" avec la commande <kbd>make:admin:dashboard</kbd>.
+        </p>
+
+        <pre class="bg-dark"><code class="text-white">
+    λ symfony console make:admin:dashboard
+
+     Which class name do you prefer for your Dashboard controller? [DashboardController]:
+     >
+
+     In which directory of your project do you want to generate "DashboardController"? [src/Controller/Admin/]:
+     >
+
+     [OK] Your dashboard class has been successfully generated.
+
+     Next steps:
+     * Configure your Dashboard at "src/Controller/Admin/DashboardController.php"
+     * Run "make:admin:crud" to generate CRUD controllers and link them from the Dashboard.
+        </code></pre>
+
+        <p class="mt-3">
+            Donc, une fois de plus, la console de Symfony nous aide. Elle nous demande le nom de notre contrôleur ainsi que le répertoire dans lequel on souhaite l'installer.
+            <br>
+            Elle nous dit aussi avoir créé le contrôleur qu'il nous faut configurer et de lancer la commande <kbd>make:admin:crud</kbd>. Mais voyons déjà le contrôleur.
+        </p>
+
+        <pre class="line-numbers"><code class="language-php">
+    namespace App\Controller\Admin;
+
+    use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
+    use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
+    use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
+    use Symfony\Component\HttpFoundation\Response;
+    use Symfony\Component\Routing\Annotation\Route;
+
+    class DashboardController extends AbstractDashboardController
+    {
+        /**
+         * @Route("/admin", name="admin")
+         */
+        public function index(): Response
+        {
+            return parent::index();
+        }
+
+        public function configureDashboard(): Dashboard
+        {
+            return Dashboard::new()
+                ->setTitle('Test Symfony');
+        }
+
+        public function configureMenuItems(): iterable
+        {
+            yield MenuItem::linktoDashboard('Dashboard', 'fa fa-home');
+            // yield MenuItem::linkToCrud('The Label', 'fas fa-list', EntityClass::class);
+        }
+    }
+        </code></pre>
+
+        <p class="mt-3">
+            Donc on a une route <kbd>/admin</kbd> pour une méthode représentant un index et deux autre méthode pour la configuration du tableau de bord et celle du menu.
+        </p>
+
+        <div class="text-center">
+            <figure class="figure">
+                <img src="../../images/symfony_easy_admin.PNG" class="img-fluid rounded" alt="easyadmin symfony">
+                <figcaption class="figure-caption text-right">Page auto générée pour EasyAdmin</figcaption>
+            </figure>
+        </div>
+
+        <p class="mt-3">
+            Si on va sur la route mentionnée on remarque que des chose sont déjà en place. Lançons la commande proposée par la console pour voir !
+        </p>
+
+        <pre class="bg-dark"><code class="text-white">
+    λ symfony console make:admin:crud
+
+     Which Doctrine entity are you going to manage with this CRUD controller?:
+      [0] App\Entity\Post
+      [1] App\Entity\User
+     > 1
+    1
+
+     Which directory do you want to generate the CRUD controller in? [src/Controller/Admin/]:
+     >
+
+     Namespace of the generated CRUD controller [App\Controller\Admin]:
+     >
+
+
+     [OK] Your CRUD controller class has been successfully generated.
+
+
+     Next steps:
+     * Configure your controller at "src/Controller/Admin/UserCrudController.php"
+     * Read EasyAdmin docs: https://symfony.com/doc/master/bundles/EasyAdminBundle/index.html
+        </code></pre>
+
+        <p class="mt-3">
+            Donc ici l'assistant me demande sur quelle entité je souhaite générer un CRUD ; j'ai choisi l'entité User qui m'aidera à changer le rôle de mes utlisateurs le cas échéant.
+            <br>
+            Je vais retourner dans mon <kbd>DashboardController.php</kbd> et y compléter la méthode de paramétrage du menu.
+        </p>
+
+        <pre class="line-numbers" data-line="4,30"><code class="language-php">
+    namespace App\Controller\Admin;
+
+    use App\Entity\User;
+    use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
+    use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
+    use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
+    use Symfony\Component\HttpFoundation\Response;
+    use Symfony\Component\Routing\Annotation\Route;
+
+    class DashboardController extends AbstractDashboardController
+    {
+        /**
+         * @Route("/admin", name="admin")
+         */
+        public function index(): Response
+        {
+            return parent::index();
+        }
+
+        public function configureDashboard(): Dashboard
+        {
+            return Dashboard::new()
+                ->setTitle('Test Symfony');
+        }
+
+        public function configureMenuItems(): iterable
+        {
+            yield MenuItem::linktoDashboard('Dashboard', 'fa fa-home');
+            yield MenuItem::linkToCrud('Utilisateurs', 'fas fa-user', User::class);
+        }
+    }
+        </code></pre>
+
+        <p class="mt-3">
+            En modifiant une simple ligne, pour lier mon <i>dashboard</i> à mon entité, je me retrouve avec un nouvel item dans le menu et si je clique dessus ...
+        </p>
+
+        <div class="text-center">
+            <figure class="figure">
+                <img src="../../images/symfony_easy_admin_entity.PNG" class="img-fluid rounded" alt="crud easyadmin symfony">
+                <figcaption class="figure-caption text-right">Entité liée à EasyAdmin</figcaption>
+            </figure>
+        </div>
+
+        <p class="mt-3">
+            ... mon entité remonte dans l'interface d'administration, avec en prime les méthodes d'ajout, de modification et de suppression.
+        </p>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Personnalisation de EasyAdmin</h2>
+
+        <p class="mt-3">
+            Notre entité remonte bien dans l'interface de EasyAdmin, mais si on cherche à modifier l'utilisateur, on ne peut pas modifier son rôle.
+            <br>
+            Pour se faire il va nous falloir ajouter l'élément à l'interface.
+        </p>
+
+        <pre class="line-numbers" data-line="18-28"><code class="language-php">
+    namespace App\Controller\Admin;
+
+    use App\Entity\User;
+    use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+    use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
+    use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
+    use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
+    use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+
+    class UserCrudController extends AbstractCrudController
+    {
+        public static function getEntityFqcn(): string
+        {
+            return User::class;
+        }
+
+        public function configureFields(string $pageName): iterable
+        {
+            return [
+                EmailField::new('email'),
+                TextField::new('firstname'),
+                TextField::new('lastname'),
+                ArrayField::new('roles')
+            ];
+        }
+    }
+        </code></pre>
+
+        <p class="mt-3">
+            On décommente donc la méthode <kbd>configureFields()</kbd>, dans laquelle on va paramétrer les champs qui apparaitront dans le back-office et que l'on pourra modifier.
+            <br>
+            Notez que les champs sont identifiés par un type dont la liste se trouve dans la <a href="https://symfony.com/doc/current/bundles/EasyAdminBundle/fields.html#field-types">documentation officielle</a>.
+            Le paramètre correspond au nom du champs dans l'entité et j'ai fait correspondre les types à ceux définit au même endroit.
+            <br>
+            Cette simple manipulation suffit à modifier le comportement de l'interface de EasyAdmin :
+        </p>
+
+        <div class="text-center">
+            <figure class="figure">
+                <img src="../../images/symfony_easy_admin_update.PNG" class="img-fluid rounded" alt="update easyadmin symfony">
+                <figcaption class="figure-caption text-right">Formulaire de mise à jour</figcaption>
+            </figure>
+        </div>
+
+        <p class="mt-3">
+            Nous pouvons maintenant ajouter de nouveaux items rôle à notre utilisateur.
+        </p>
+
+        <p class="mt-3">
+            Notez que si vous souhaitez changer le label des champs, il vous est possible de passer le terme souhaité en second paramètre de la méthode <kbd>new()</kbd>.
+            <br>
+            Vous poyurrez aussi ajouter d'autres éléments de <a
+                href="https://symfony.com/doc/current/bundles/EasyAdminBundle/fields.html#field-configuration">configurations</a>.
+        </p>
+    </section>
+</main>
+
+<script src="../../scripts/prism.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
+        crossorigin="anonymous"></script>
+</body>
+</html>
