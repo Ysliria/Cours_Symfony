@@ -6,20 +6,170 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
           integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
     <link rel="stylesheet" href="../../styles/prism.css">
-    <title>Symfony 5 - Aller plus loin - Api Platform</title>
+    <title>Symfony 5 - Aller plus loin - API Platform</title>
 </head>
 
 <body>
 <main class="container">
-    <h1 class="display-1">Api Platform</h1>
+    <h1 class="display-1">API Platform</h1>
 
     <hr>
 
     <section class="mt-5">
-        <h2 class="text-muted"></h2>
+        <h2 class="text-muted">Installer API Plateform</h2>
 
         <p class="mt-3">
+            API Platform est un framework web écrit en PHP et construit sur Symfony. Il permet de créer rapidement des applications orientées API.
+            <br>
+            Il peut être utilisé seul ou avec d'autre framework, comme nous le ferons avec Symfony.
+        </p>
 
+        <p class="lead text-center mt-3">
+            La plate-forme API est la plate-forme API la plus avancée, dans n'importe quel framework ou langage.
+            <br>
+            <small>~ Fabien POTENCIER, créateur de Symfony.</small>
+        </p>
+
+        <p class="mt-3">
+            Pour l'insaller il suffit de taper la commande <kbd>composer require api</kbd>.
+        </p>
+
+        <pre class="bg-dark"><code class="text-white">
+    λ composer require api
+
+    [...]
+
+    Some files may have been created or updated to configure your new packages.
+    Please review, edit and commit them: these files are yours.
+
+
+     What's next?
+
+
+      * Your API is almost ready:
+        1. Create your first API resource in src/Entity;
+        2. Go to /api to browse your API
+
+      * To enable the GraphQL support, run composer require webonyx/graphql-php,
+        then browse /api/graphql.
+
+      * Read the documentation at https://api-platform.com/docs
+
+    Loading composer repositories with package information
+    Installing dependencies (including require-dev) from lock file
+    Package operations: 0 installs, 0 updates, 3 removals
+      - Removing symfony/serializer-pack (v1.0.4)
+      - Removing symfony/orm-pack (v2.1.0)
+      - Removing api-platform/api-pack (v1.3.0)
+        </code></pre>
+
+        <p class="mt-3">
+            Comme à chaque fois avec Symfony, on vous indique les étapes que vous pouvez suivre pour la suite de votre projet ; ici de créer la première ressource API dans nos entités. Essayons avec l'entité <kbd>Post.php</kbd>.
+            <br>
+            Mais si vous allez sur <a href="http://localhost:8000/api">http://localhost:8000/api</a>, vous verrez une chose surprenante ... la page de documentation, bien qu vide, est auto-générée !
+        </p>
+
+        <div class="text-center">
+            <figure class="figure">
+                <img src="../../images/symfony_api_platform.PNG" class="img-fluid rounded" alt="api platform">
+                <figcaption class="figure-caption text-right">Page de documentation auto-générée</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Utiliser API Plateform</h2>
+
+        <p class="mt-3">
+            Avant toutes choses, il faut que vous sachiez que si on avait installé API Platform avant de commencer notre projet, il nous aurait demandé si on souhaitait exposer une API à chaque création de nos entités.
+            Mais on peut quand même le faire a posteriori. En bonus vous verrez votre page de documentation se compléter au fur et à mesure.
+        </p>
+
+        <pre class="line-numbers" data-line="4,9"><code class="language-php">
+    namespace App\Entity;
+
+    use ApiPlatform\Core\Annotation\ApiResource;
+    use App\Repository\PostRepository;
+    use Doctrine\ORM\Mapping as ORM;
+
+    /**
+     * @ApiResource()
+     * @ORM\Entity(repositoryClass=PostRepository::class)
+     */
+    class Post
+    {
+        [...]
+    }
+        </code></pre>
+
+        <p class="mt-3">
+            Le simple fait d'avoir ajouter l'annotation <kbd>@ApiResource()</kbd> indique à Symfony qu'il s'agit d'une ressource à exposer comme API. De plus celà lui indique aussi la documentation à auto-générer !
+        </p>
+
+        <div class="text-center">
+            <figure class="figure">
+                <img src="../../images/symfony_api_platform_doc.PNG" class="img-fluid rounded" alt="api platform doc">
+                <figcaption class="figure-caption text-right">Page de documentation mise à jour</figcaption>
+            </figure>
+        </div>
+
+        <p class="mt-3">
+            On a donc une documentation auto-générée. Celle-ci nous liste les méthodes diponibles ainsi que leur signature, des exemples de retours sur divers formats, etc ... Elle est très complète.
+            <br>
+            Et on peut en plus essayer l'API !
+        </p>
+
+        <div class="text-center">
+            <figure class="figure">
+                <img src="../../images/symfony_api_platform_test.PNG" class="img-fluid rounded" alt="api platform test">
+                <figcaption class="figure-caption text-right">La documentation nous permet d'essayer l'API</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Configurer API Plateform</h2>
+
+        <p class="mt-3">
+            Mais voilà je ne souhaite pas forcément tout exposer n'importe comment ! Je ne souhaite qu'exposer la liste de mes articles et le détail de ceux-ci.
+            <br>
+            Pour se faire je vais juste lui demander de ne répondre qu'au requête GET.
+        </p>
+
+        <pre class="line-numbers" data-line="10-11"><code class="language-php">
+    namespace App\Entity;
+
+    use ApiPlatform\Core\Annotation\ApiResource;
+    use App\Repository\PostRepository;
+    use Doctrine\ORM\Mapping as ORM;
+
+    /**
+     * @ApiResource(
+     *     collectionOperations={"get"},
+     *     itemOperations={"get"}
+     * )
+     * @ORM\Entity(repositoryClass=PostRepository::class)
+     */
+    class Post
+    {
+        [...]
+    }
+        </code></pre>
+
+        <div class="text-center">
+            <figure class="figure">
+                <img src="../../images/symfony_api_platform_get_only.PNG" class="img-fluid rounded" alt="api platform get seul">
+                <figcaption class="figure-caption text-right">Restriction à la route GET</figcaption>
+            </figure>
+        </div>
+
+        <p class="mt-3">
+            Il ne s'agit là que d'une présentation des bases. La <a href="https://api-platform.com/docs">documentation</a> enrichira votre besoin et je vous conseille la vidéo de
+            <a href="https://grafikart.fr/tutoriels/module-commentaires-api-platform-1310">Grafikart</a> qui explique très bien comment utiliser l'outil.
         </p>
     </section>
 
