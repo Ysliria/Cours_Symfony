@@ -11,16 +11,169 @@
 
 <body>
 <main class="container">
-    <h1 class="display-1"></h1>
+    <h1 class="display-1">Mailer</h1>
 
     <hr>
 
     <section class="mt-5">
-        <h2 class="text-muted"></h2>
+        <h2 class="text-muted">Installation et paramétrage de Mailer</h2>
 
         <p class="mt-3">
-
+            Si elle n'est pa déjà présente, l'installation de la librairie Mailer se fait avec composer <kbd>composer require symfony/mailer</kbd>.
+            <br>
+            Une fois l'installation faite il vous faudra modifier le fichier de configuration <kbd>.env</kbd> pour paramétrer Mailer et notamment le SMTP.
         </p>
+
+        <pre class="line-numbers"><code class="language-php">
+    # In all environments, the following files are loaded if they exist,
+    # the latter taking precedence over the former:
+    #
+    #  * .env                contains default values for the environment variables needed by the app
+    #  * .env.local          uncommitted file with local overrides
+    #  * .env.$APP_ENV       committed environment-specific defaults
+    #  * .env.$APP_ENV.local uncommitted environment-specific overrides
+    #
+    # Real environment variables win over .env files.
+    #
+    # DO NOT DEFINE PRODUCTION SECRETS IN THIS FILE NOR IN ANY OTHER COMMITTED FILES.
+    #
+    # Run "composer dump-env prod" to compile .env files for production use (requires symfony/flex >=1.2).
+    # https://symfony.com/doc/current/best_practices.html#use-environment-variables-for-infrastructure-configuration
+
+    ###> symfony/mailer ###
+    MAILER_DSN=smtp://localhost:1025/
+    ###< symfony/mailer ###
+
+    ###> doctrine/doctrine-bundle ###
+    DATABASE_URL="mysql://root:@127.0.0.1:3306/test_symfony"
+    ###< doctrine/doctrine-bundle ###
+        </code></pre>
+
+        <p class="mt-3">
+            Pour ce paramétrage j'indique à Mailer que je vais utiliser mon localhost avec le port 1025 pour envoyer mes mails.
+            Il s'agit dans mon cas de l'intercepteur de mail <string>maildev</string> qui me servira à débuguer mes mails.
+            Pour l'installer, il vous faut <strong>node.js</strong> et faire un <kbd>npm install -g maildev</kbd>.
+            Une fois installer lancer la commande <kbd>maildev --hide-extensions STARTTLS</kbd>. Le commutateur n'est en général pas obligatoire, mais sans cela il y aura des erreurs avec Symfony.
+            Pour les autre option de configuration de <strong>maildev</strong> référez-vous à la <a href="https://maildev.github.io/maildev/">documentation</a>.
+        </p>
+
+        <p class="mt-3">
+            Vous avez maintenant un outil en place pour ecouter et intercepter les mails sur le port 1025 et vous les afficher sur le
+            <a href="http://localhost:1080">http://localhost:1080</a>.
+        </p>
+
+        <div class="text-center">
+            <figure class="figure">
+                <img src="../../images/symfony_maildev.PNG" class="img-fluid rounded" alt="maildev">
+                <figcaption class="figure-caption text-right">Maildev pour intercepter et déboguer les emails</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Utilisation de Mailer</h2>
+
+        <p class="mt-3">
+            Une fois l'insallation effectuée, vous pouvez injecter Mailer là où vous en avez besoin.
+            Il utilise divers méthodes permettant de configurer l'envoi d'un mail simple, mais aussi en permettant de gérer des templates.
+            <br>
+            Nous utiliserons des templates
+        </p>
+
+        <pre class="line-numbers"><code class="language-php">
+    namespace App\Controller;
+
+    use App\Entity\User;
+    use App\Form\UserType;
+    use Doctrine\ORM\EntityManagerInterface;
+    use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+    use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+    use Symfony\Component\HttpFoundation\Request;
+    use Symfony\Component\HttpFoundation\Response;
+    use Symfony\Component\Mailer\MailerInterface;
+    use Symfony\Component\Routing\Annotation\Route;
+    use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+
+    class RegisterController extends AbstractController
+    {
+        private EntityManagerInterface $entityManager;
+
+        public function __construct(EntityManagerInterface $entityManager)
+        {
+            $this->entityManager = $entityManager;
+        }
+
+        /**
+         * @Route("/register", name="register")
+         * @param \Symfony\Component\HttpFoundation\Request                             $request
+         * @param \Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface $passwordEncoder
+         * @param \Symfony\Component\Mailer\MailerInterface                             $mailer
+         *
+         * @return \Symfony\Component\HttpFoundation\Response
+         * @throws \Symfony\Component\Mailer\Exception\TransportExceptionInterface
+         */
+        public function index(Request $request, UserPasswordEncoderInterface $passwordEncoder, MailerInterface $mailer): Response
+        {
+            $user = new User();
+            $form = $this->createForm(UserType::class, $user);
+
+            $form->handleRequest($request);
+
+            if ($form->isSubmitted() && $form->isValid()) {
+                $user = $form->getData();
+
+                // Encoder le mot de passe
+                $user->setPassword($passwordEncoder->encodePassword($user, $user->getPassword()));
+
+                $this->entityManager->persist($user);
+                $this->entityManager->flush();
+
+                $message = (new TemplatedEmail())
+                    ->from('admin@admin.local')
+                    ->to('auger.mickael37@gmail.com')
+                    ->subject('Inscription réussie')
+                    ->htmlTemplate('mail/register.html.twig')
+                    ->context([
+                        'user' => $user
+                    ])
+                ;
+
+                $mailer->send($message);
+            }
+
+
+            return $this->render('register/index.html.twig', [
+                'form' => $form->createView()
+            ]);
+        }
+    }
+        </code></pre>
+
+        <p class="mt-3">
+            Ici dans notre méthode d'enregistrement d'utilisateur, on injecte <kbd>MailerInterface</kbd>. On créé un nouvel objet <kbd>TemplatedEmail()</kbd> qui permet de créer un mail avec un template.
+            Pour ne pas utiliser de template on aurait utilisé <kbd>Mailer()</kbd>.
+        </p>
+
+        On définit pour ce nouvel objet :
+        <ul>
+            <li>L'expéditeur.</li>
+            <li>Le destinataire.</li>
+            <li>Le sujet</li>
+            <li>Le template qui sera utilisé pour le contenu du mail</li>
+            <li>Et dans le contexte on passe nos variables au template</li>
+        </ul>
+
+        <pre class="line-numbers"><code class="language-twig">
+    &lt;h1&gt;Bonjour {{ user.firstname }} {{ user.lastname }},&lt;/h1&gt;
+
+    &lt;p&gt;
+        Votre inscription a bien été prise en compte.
+        &lt;br&gt;
+        Vous pouvez maintenant vous connecter sur notre &lt;a href="{{ patch('app_login') }}"&gt;site&lt;/a&gt; !
+    &lt;/p&gt;
+        </code></pre>
     </section>
 
     <div class="row">
