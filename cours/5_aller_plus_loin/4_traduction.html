@@ -11,15 +11,259 @@
 
 <body>
 <main class="container">
-    <h1 class="display-1"></h1>
+    <h1 class="display-1">Les traductions</h1>
 
     <hr>
 
     <section class="mt-5">
-        <h2 class="text-muted"></h2>
+        <h2 class="text-muted">Utilisation de la locale dans les routes</h2>
 
         <p class="mt-3">
+            Quand on parle internationalisation ou localisation, on entend bien sûr la traduction, mais aussi tout ce qui permettra une utilisation optimale de notre application dans les pays ciblés.
+            La première chose que l'on peut aborder, ceux sont les routes. Grâce qu système d'annoations, on peut aisément ajouter des routes prenant en compte la locale du pays.
+        </p>
+        
+        <pre class="line-numbers" data-line="16-22"><code class="language-php">
+    namespace App\Controller;
 
+    use App\Entity\Post;
+    use App\Form\PostType;
+    use Doctrine\ORM\EntityManagerInterface;
+    use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+    use Symfony\Component\HttpFoundation\Request;
+    use Symfony\Component\HttpFoundation\Response;
+    use Symfony\Component\Routing\Annotation\Route;
+
+    /**
+     * Class PostController
+     *
+     * @package App\Controller
+     * @Route(
+     *     "/{_locale}",
+     *     requirements={
+     *         "_locale": "en|fr"
+     *     }
+     * )
+     */
+    class PostController extends AbstractController
+    {
+        [...]
+    }
+        </code></pre>
+        
+        <p class="mt-3">
+            Ici on a ajouter la locale dans la route, avec une restriction pour la limiter à <strong>fr</strong> ou à <strong>en</strong>. A noter que cette restriction n'est pas obligatoire, mais si elle n'est pas présente on pourra accéder à n'importe quelle route avec nimporte quelle locale.
+            Rien de grave en soit, mais cela impliquera que vous traduisiez toutes les locales, sinon elle seront redirigée sur la local par défaut.
+            <br>
+            Ici on aura donc 2 routes possible pour le articles : <a href="http://localhost:8000/en/post">http://localhost:8000/en/post</a> ou
+            <a href="http://localhost:8000/fr/post">http://localhost:8000/fr/post</a>. Le passage de cette locale en paramètre des routes définit automatiquement définis le paramètres régionnaux qui peuvent être récupérés via la méthode <kbd>getLocale()</kbd>.
+            En d'autres termes, si un utilisateur visite l'URI <strong>/fr/post</strong>, les paramètres régionaux <strong>fr</strong> seront automatiquement définis comme paramètres régionaux pour la demande en cours.
+        </p>
+
+        <p class="mt-3">
+            La locale par défaut est définie dans un ficher de configuration <kbd>translation.yaml</kbd>. On y trouvera aussi la "<i>fallbacks</i>" qui déterminera la traduction à prendre si on ne retrouve pas celle souhaitée.
+        </p>
+
+        <pre class="line-numbers" data-line=""><code class="language-yaml">
+    framework:
+        default_locale: fr
+        translator:
+            default_path: '%kernel.project_dir%/translations'
+            fallbacks:
+                - en
+        </code></pre>
+
+        <p class="mt-3">
+            Les routes apparaitront, bien évidemment, dans le débogueur.
+        </p>
+
+        <pre class="bg-dark"><code class="text-white">
+    λ symfony console debug:route
+     -------------------------- -------- -------- ------ -------------------------------------
+      Name                       Method   Scheme   Host   Path
+     -------------------------- -------- -------- ------ -------------------------------------
+      _preview_error             ANY      ANY      ANY    /_error/{code}.{_format}
+      _wdt                       ANY      ANY      ANY    /_wdt/{token}
+      _profiler_home             ANY      ANY      ANY    /_profiler/
+      _profiler_search           ANY      ANY      ANY    /_profiler/search
+      _profiler_search_bar       ANY      ANY      ANY    /_profiler/search_bar
+      _profiler_phpinfo          ANY      ANY      ANY    /_profiler/phpinfo
+      _profiler_search_results   ANY      ANY      ANY    /_profiler/{token}/search/results
+      _profiler_open_file        ANY      ANY      ANY    /_profiler/open
+      _profiler                  ANY      ANY      ANY    /_profiler/{token}
+      _profiler_router           ANY      ANY      ANY    /_profiler/{token}/router
+      _profiler_exception        ANY      ANY      ANY    /_profiler/{token}/exception
+      _profiler_exception_css    ANY      ANY      ANY    /_profiler/{token}/exception.css
+      admin                      ANY      ANY      ANY    /admin
+      home                       ANY      ANY      ANY    /
+      post                       ANY      ANY      ANY    /{_locale}/post
+      new_post                   ANY      ANY      ANY    /{_locale}post/new
+      register                   ANY      ANY      ANY    /register
+      app_login                  ANY      ANY      ANY    /login
+      app_logout                 ANY      ANY      ANY    /logout
+      api_entrypoint             ANY      ANY      ANY    /api/{index}.{_format}
+      api_doc                    ANY      ANY      ANY    /api/docs.{_format}
+      api_jsonld_context         ANY      ANY      ANY    /api/contexts/{shortName}.{_format}
+      api_posts_get_collection   GET      ANY      ANY    /api/posts.{_format}
+      api_posts_get_item         GET      ANY      ANY    /api/posts/{id}.{_format}
+     -------------------------- -------- -------- ------ -------------------------------------
+        </code></pre>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Traduire l'interface</h2>
+
+        <p class="mt-3">
+            Nous savons comment gérer les locale dans les routes, mais cela ne gère pas les traductions. Pour traduire l'interface de notre site, nous disposons de tags et de filtre <i>trans</i> dans Twig.
+            Treaduisons le titre de la page qui liste nos articles.
+        </p>
+
+        <pre class="line-numbers" data-line=""><code class="language-twig">
+    &lt;h1&gt;{{ 'Mes articles'|trans }}&lt;/h1&gt;
+
+    &lt;section&gt;
+        {% for post in posts %}
+            &lt;article&gt;
+                &lt;h2&gt;{{ post.title }}&lt;/h2&gt;
+
+                &lt;p&gt;
+                    {{ post.content }}
+                &lt;/p&gt;
+            &lt;/article&gt;
+        {% endfor %}
+    &lt;/section&gt;
+        </code></pre>
+
+        <p class="mt-3">
+            On passe donc le titre de la page dans un élément Twig et on lui accolde le filtre de traduction. La demande de traduction est appelé ainsi !
+            <br>
+            Mais si je regarde mon <i>profiler</i>, je constate que la traduxtion est manquante !
+        </p>
+
+        <div class="text-center">
+            <figure class="figure">
+                <img src="../../images/symfony_translate_profiler.PNG" class="img-fluid rounded" alt="traduction profiler symfony">
+                <figcaption class="figure-caption text-right">
+                    Le profiler indique l'absence de traduction.
+                </figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Générer le fichier de traduction</h2>
+
+        <p class="mt-3">
+            Pour que l'application puisse trouver les traductions, il faut les générer. La console de Symfony dispose de ce qu'il faut pour effectuer cette action : <kbd>symfony console translation:update en --force --domain=messages</kbd>.
+        </p>
+
+        <pre class="bg-dark"><code class="text-white">
+    λ symfony console translation:update en --force --domain=messages
+
+    Translation Messages Extractor and Dumper
+    =========================================
+
+     // Generating "en" translation files for "default directory"
+
+     // Parsing templates...
+
+     // Loading translation files...
+
+     // Writing files...
+
+
+     [OK] Translation files were successfully updated.
+
+
+        </code></pre>
+
+        <p class="mt-3">
+            On demande donc la génération avec <kbd>--force</kbd> du fichier de traduction <kbd>en</kbd> et qui concerne <kbd>--domain=messages</kbd>.
+            <br>
+            On fait la traduction dans le fichier, et on n'a plus d'ezrreur dans le <i>profiler</i>.
+        </p>
+        
+        <pre class="line-numbers" data-line=""><code class="language-xml">
+    &lt;?xml version="1.0" encoding="utf-8"?&gt;
+    &lt;xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2"&gt;
+      &lt;file source-language="fr" target-language="en" datatype="plaintext" original="file.ext"&gt;
+        &lt;header&gt;
+          &lt;tool tool-id="symfony" tool-name="Symfony"/&gt;
+        &lt;/header&gt;
+        &lt;body&gt;
+          &lt;trans-unit id="QZ.2iPz" resname="Mes articles"&gt;
+            &lt;source&gt;Mes articles&lt;/source&gt;
+            &lt;target&gt;My Posts&lt;/target&gt;
+          &lt;/trans-unit&gt;
+        &lt;/body&gt;
+      &lt;/file&gt;
+    &lt;/xliff&gt;
+        </code></pre>
+
+        <div class="text-center">
+            <figure class="figure">
+                <img src="../../images/symfony_translate_profiler_OK.PNG" class="img-fluid rounded" alt="traduction profiler symfony">
+                <figcaption class="figure-caption text-right">
+                    Le profiler indique la traduction du terme.
+                </figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <hr>
+
+    <section class="mt-5">
+        <h2 class="text-muted">Un peu plus loin dans les traductions</h2>
+
+        <p class="mt-3">
+            A noter que si vous utilisez les filtres Twig pour la mise en forme des dates, heures, devises et nombres, la localisation se fera de façon automatique.
+        </p>
+
+        <p class="mt-3">
+            La gestion des pluriels dans la traduction est assez complexe quelque soit la langue. Pour pallier cela, il faudra créer un identifiant unique pour ces termes et pour les phrases complexes.
+            <br>
+            Mais cela impliquera de générer aussi le fichier de traduction dans la langue de base de notre application, pour gérer les pluriels.
+        </p>
+        
+        <pre class="line-numbers" data-line=""><code class="language-twig">
+    &lt;h1&gt;{{ 'list_articles'|trans({count: posts.length}) }}&lt;/h1&gt;
+
+    &lt;section&gt;
+        {% for post in posts %}
+            &lt;article&gt;
+                &lt;h2&gt;{{ post.title }}&lt;/h2&gt;
+    
+                &lt;p&gt;
+                    {{ post.content }}
+                &lt;/p&gt;
+            &lt;/article&gt;
+        {% endfor %}
+    &lt;/section&gt;
+        </code></pre>
+        
+        <pre class="line-numbers" data-line=""><code class="language-xml">
+    &lt;?xml version="1.0" encoding="utf-8"?&gt;
+    &lt;xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2"&gt;
+      &lt;file source-language="fr" target-language="en" datatype="plaintext" original="file.ext"&gt;
+        &lt;header&gt;
+          &lt;tool tool-id="symfony" tool-name="Symfony"/&gt;
+        &lt;/header&gt;
+        &lt;body&gt;
+          &lt;trans-unit id="QZ.2iPz" resname="Mes articles"&gt;
+            &lt;source&gt;list_articles&lt;/source&gt;
+            &lt;target&gt;{count, plural, =0 {No post} one {Post} other {Posts}}&lt;/target&gt;
+          &lt;/trans-unit&gt;
+        &lt;/body&gt;
+      &lt;/file&gt;
+    &lt;/xliff&gt;
+        </code></pre>
+
+        <p class="mt-3">
+            Enfin pour avoir plus d'information sur la <a href="https://symfony.com/doc/current/translation.html">traduction</a> et le <a href="https://symfony.com/doc/current/translation/debug.html">débogue</a> il faut se référer à la documentation
         </p>
     </section>
 
